@@ -1,0 +1,53 @@
+<html>
+<head>
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript">
+    </script>
+    <style type="text/css">
+        body {
+            margin: 20px;
+            font-family: "Helvetica", "Arial", sans-serif;
+        }
+
+        h1 {
+            color: #555;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<h1>Getting today's Wikipedia featured article...</h1>
+</body>
+<script type="text/javascript">
+    var feed_source = "http://www.instapaper.com/special/wikipedia_featured_rss";
+    var diff = 1000 * 60 * 60 * 4;
+    $(document).ready(function () {
+        var oldLink = localStorage.getItem("link");
+        var oldTime = localStorage.getItem("linkTime");
+
+        var d = new Date();
+        var currentTime = d.getTime();
+
+        if(!oldTime) {
+            oldTime = 0;
+        }
+
+        if(currentTime - oldTime > diff) {
+            $.get(feed_source, function (xmlDoc, textStatus, jqXHR) {
+                var $xml = $(xmlDoc);
+                var links = $xml.find("item link");
+                if (links.length > 0) {
+                    var link = $(links[0]).text();
+                    localStorage.setItem("link", link);
+                    localStorage.setItem("linkTime", d.getTime());
+                    window.location.href = $(links[0]).text();
+                }
+            }, "xml");
+        }
+        else {
+            window.location.href = oldLink;
+        }
+
+    });
+</script>
+</html>

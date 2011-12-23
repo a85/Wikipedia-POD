@@ -1,0 +1,12 @@
+<html>
+<head>
+    <script type="text/javascript">
+        chrome.extension.onRequest.addListener(
+            function (request, sender, sendResponse) {
+                console.log(request, sender, sendResponse);
+                sendResponse({});
+            }
+        );
+    </script>
+</head>
+</html>
