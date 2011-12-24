@@ -5,47 +5,156 @@
     </script>
     <style type="text/css">
         body {
-            margin: 20px;
             font-family: "Helvetica", "Arial", sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #redirect-container {
+            margin: 20px;
+            display: none;
+        }
+
+        #list-container {
+            margin-left: 20px;
+            padding-top: 0px;
+            padding-left: 20px;
+            display: none;
+            max-width: 800px;
+            box-shadow: 0 0 10px #888;
+            padding-right: 30px;
+            margin: auto;
         }
 
         h1 {
             color: #555;
-            font-size: 16px;
+            font-size: 18px;
+            padding-top: 20px;
+        }
+
+        #list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        #list li {
+            padding-bottom: 4px;
+            border-bottom: solid thin #efefef;
+        }
+
+        #list li a {
+            margin-right: 5px;
+            color: #00A6FF;
+            font-size: 14px;
+            font-weight: bold;
+            text-decoration: none;
+        }
+        
+        #list li a:visited {
+            color: #750071;
+        }
+        
+        #list li a:hover {
+            text-decoration: underline;
+        }
+
+        #list li p {
+            font-family: Georgia, serif;
+            font-size: 13px;
+            font-style: normal;
+            font-weight: normal;
+            text-transform: normal;
+            letter-spacing: normal;
+            line-height: 1.8em;
+            color: #444;
+        }
+
+        #list li h4 span {
+            font-size: 10px;
+            color: #555;
         }
     </style>
 </head>
 <body>
-<h1>Getting today's Wikipedia featured article...</h1>
+<div id="redirect-container">
+    <h1>Taking you to today's Wikipedia featured article...</h1>
+</div>
+<div id="list-container">
+    <h1>Featured Wikipedia Articles</h1>
+    <ul id="list">
+    </ul>
+</div>
 </body>
 <script type="text/javascript">
     var feed_source = "http://www.instapaper.com/special/wikipedia_featured_rss";
-    var diff = 1000 * 60 * 60 * 4;
+    var diff = 1;
+
+    function displayArticles(xmlDoc) {
+        var $xml = $.parseXML(xmlDoc);
+        $xml = $($xml);
+        var html = "";
+        $xml.find("item").each(function () {
+            var $item = $(this);
+            var title = $item.find("title").text();
+            var link = $item.find("link").text();
+            var description = $item.find("description").text();
+            var pubDate = $item.find("pubDate").text();
+
+            html += "<li>";
+            html += "<h4><a href='" + link + "'>" + title + "</a><span>" + pubDate + "</span></h4>";
+            html += "<p>" + description + "</p>";
+            html += "</li>";
+            $('#list').html(html);
+        });
+    }
+
     $(document).ready(function () {
         var oldLink = localStorage.getItem("link");
         var oldTime = localStorage.getItem("linkTime");
+        var xmlDoc = localStorage.getItem("articles");
+        var type = localStorage.getItem("type");
 
         var d = new Date();
         var currentTime = d.getTime();
 
-        if(!oldTime) {
+        if (!oldTime) {
             oldTime = 0;
         }
 
-        if(currentTime - oldTime > diff) {
+        if (currentTime - oldTime > diff) {
             $.get(feed_source, function (xmlDoc, textStatus, jqXHR) {
-                var $xml = $(xmlDoc);
+                var $xml = $.parseXML(xmlDoc);
+                $xml = $($xml);
+                localStorage.setItem("articles", xmlDoc);
                 var links = $xml.find("item link");
                 if (links.length > 0) {
                     var link = $(links[0]).text();
                     localStorage.setItem("link", link);
                     localStorage.setItem("linkTime", d.getTime());
-                    window.location.href = $(links[0]).text();
+
+                    if (type == 0) {
+                        $("#redirect-container").fadeIn();
+                        window.location.href = $(links[0]).text();
+                    }
+                    else {
+                        $("#list-container").fadeIn();
+                        displayArticles(xmlDoc);
+                    }
                 }
-            }, "xml");
+            }, "text");
         }
         else {
-            window.location.href = oldLink;
+
+            if (type == 0) {
+                $("#redirect-container").fadeIn();
+                window.location.href = oldLink;
+            }
+            else {
+                $("#list-container").fadeIn();
+                displayArticles(xmlDoc);
+            }
+
         }
 
     });

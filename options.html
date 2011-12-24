@@ -7,11 +7,42 @@
             width: 250px;
         }
     </style>
+    <script type="text/javascript" src="jquery.js"></script>
 </head>
 <body>
-<form>
-    <input type="checkbox" id="redirect_enabled" checked/>
-    <label for="redirect_enabled">Set new tab as Wikipedia featured article</label>
+<form name="pod-type-form">
+    <div>
+        <input type="radio" value="0" id="redirect" name="pod-type"/>
+        <label for="redirect">Show Wikipedia featured article in new tab</label>
+    </div>
+    <div>
+        <input type="radio" value="1" id="list" name="pod-type"/>
+        <label for="list">Show a list of featured articles in new tab</label>
+    </div>
 </form>
 </body>
+<script type="text/javascript">
+    $(document).ready(function() {
+        var val = localStorage.getItem("type");
+
+        if(!val) {
+            val = 0;
+            localStorage.setItem("type", 0);
+        }
+
+        if(val == 0) {
+            $('#redirect').prop("checked", true);
+            $('#list').prop("checked", false);
+        }
+        else {
+            $('#redirect').prop("checked", false);
+            $('#list').prop("checked", true);
+        }
+    })
+
+    $("input[name=pod-type]").change(function() {
+        var val = parseInt($(this).val(), 10);
+        localStorage.setItem("type", val);
+    });
+</script>
 </html>
